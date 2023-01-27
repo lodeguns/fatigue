@@ -4,7 +4,7 @@
 V. Giannella , F. Bardozzo , A. Postiglione , R. Tagliaferri , R. Sepe and R. Citarella
 
 
-> Abstract: Crack propagation analyses are fundamental for all mechanical structures for
+> Crack propagation analyses are fundamental for all mechanical structures for
 which safety must be guaranteed, e.g. as for the aviation and aerospace fields. The estimation
 of life for structures in presence of defects is a process inevitably affected by numerous and
 unavoidable uncertainty and variability sources, whose effects need to be quantified to avoid
