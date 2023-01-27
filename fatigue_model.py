@@ -1,66 +1,56 @@
+# Fatigue model
+# Paper: Neural networks for fatigue crack propagation predictions in real-time under uncertainty
+# V. Giannella , F. Bardozzo , A. Postiglione , R. Tagliaferri , R. Sepe and R. Citarella
+# Corresponding author: vgiannella@unisa.it
+# Source code: fbardozzo@unisa.it
 
-import os
-#  Level | Level for Humans | Level Description
-# -------|------------------|------------------------------------
-#  0     | DEBUG            | [Default] Print all messages
-#  1     | INFO             | Filter out INFO messages
-#  2     | WARNING          | Filter out INFO & WARNING messages
-#  3     | ERROR            | Filter out all messages
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
 
-seed = 2
-os.environ['PYTHONHASHSEED'] = str(seed)
-#tf 2.2.0
-
+import numpy as np
+import pandas as pd
 import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
 from tensorflow.keras.models import Model, Sequential, load_model
-import numpy as np
+tf.random.set_seed(seed)
+tf.keras.utils.set_random_seed(seed)
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+seed = 2
+os.environ['PYTHONHASHSEED'] = str(seed)
 import levenberg_marquardt as lm
-import pandas as pd
 
 tf.random.set_seed(seed)
 tf.keras.utils.set_random_seed(seed)
 
+
 def scaler(x, min_v, max_v):
     x0 = np.asarray(x)
     scale = (x - min_v)/(max_v -min_v)
-    #return x0, x0.mean(), x0.std(), x0.min(), x0.max()
-    #x = (x0 - x0.mean()) / x0.std()
     return scale, x0.mean(), x0.std(), min_v, max_v
 
 def descaler(x, x_mean, x_std, x_min, x_max):
     x = np.asarray(x)
-    #return x
     x = (x * (x_max - x_min)) + x_min
-    return  x #(x * x_std) + x_mean
+    return  x
 
 def preprocess_files(name_file = 'train_data.csv'):
-    #train and validation dataset
+
     df = pd.read_csv(name_file)
     whole_dataset  = df.replace(",", ".")
     whole_dataset  = np.matrix(whole_dataset)
-    x0  = np.asarray(whole_dataset[:,(0)] , dtype=np.float64 )   #input characteristics  + vo
-    x1  = np.asarray(whole_dataset[:,(1)] , dtype=np.float64 )   #input characteristics  + vo
-    x2  = np.asarray(whole_dataset[:,(2)] , dtype=np.float64 )   #input characteristics  + vo
-    x3  = np.asarray(whole_dataset[:,(3)] , dtype=np.float64 )   #input characteristics  + vo
-    x4  = np.asarray(whole_dataset[:,(4)] , dtype=np.float64 )   #input characteristics  + vo
-    y  = np.asarray(whole_dataset[:,(6)]  , dtype=np.float64)  #target characteristics + p
+    x0  = np.asarray(whole_dataset[:,(0)] , dtype=np.float64 )
+    x1  = np.asarray(whole_dataset[:,(1)] , dtype=np.float64 )
+    x2  = np.asarray(whole_dataset[:,(2)] , dtype=np.float64 )
+    x3  = np.asarray(whole_dataset[:,(3)] , dtype=np.float64 )
+    x4  = np.asarray(whole_dataset[:,(4)] , dtype=np.float64 ) 
+    y  = np.asarray(whole_dataset[:,(6)]  , dtype=np.float64) 
 
     y = pd.DataFrame(y)
     y = np.asarray(y)
     y_min = 4.25
     y_max = 5.5
     y, y_mean, y_std, _, _ = scaler(y, y_min, y_max)
-
-
-    #C_var=logspace(-10.3,-9.1,nb);     0
-    #n_var=linspace(2.3,3.5,nb);        1
-    #P_var=linspace(11000,17000,nb);    2
-    #t_var=linspace(2.1,2.9,nb);        3
-    #A_var=linspace(1.5,2.5,nb);        4
-
 
     x_list  =  [x0,x1,x2,x3,x4]
     x_norm  =  []
@@ -127,8 +117,6 @@ def fatigue_model0(input_x, n_feat=5, out_size=1, opt_mode="adam"):
 
     f = tf.keras.layers.Dense(7,   activation='sigmoid', use_bias=True)(in_l)
 
-    #kernel_reg   = tf.keras.regularizers.l1_l2(0.0001)
-    #bias_reg     = tf.keras.regularizers.l1_l2(0.0001)
     f = tf.keras.layers.Dense(out_size,  input_dim=n_feat,
                               kernel_initializer=kernel_initializer,
                               bias_initializer=bias_initializer,
@@ -178,10 +166,7 @@ def fatigue_model123(input_x, n_feat=5, out_size=1, opt_mode="adam"):
 
     f = tf.keras.layers.Dense(7,   activation='sigmoid', use_bias=True)(in_l)
     f = tf.keras.layers.Dense(4,    activation='sigmoid', use_bias=True)(f)
-    #f = tf.keras.layers.Dense(2,    activation='sigmoid', use_bias=True)(f)
 
-    #kernel_reg   = tf.keras.regularizers.l1_l2(0.0001)
-    #bias_reg     = tf.keras.regularizers.l1_l2(0.0001)
     f = tf.keras.layers.Dense(out_size,  input_dim=n_feat,
                               kernel_initializer=kernel_initializer,
                               bias_initializer=bias_initializer,
@@ -232,10 +217,7 @@ def fatigue_model456(input_x, n_feat=5, out_size=1, opt_mode="adam"):
     f = tf.keras.layers.Dense(64,   activation='sigmoid', use_bias=True)(in_l)
     f = tf.keras.layers.Dropout(rate=0.1, seed=9 )(f)
     f = tf.keras.layers.Dense(7,    activation='sigmoid', use_bias=True)(f)
-    #f = tf.keras.layers.Dense(4,    activation='sigmoid', use_bias=True)(f)
-    #f = tf.keras.layers.Dense(2,    activation='sigmoid', use_bias=True)(f)
-    #kernel_reg   = tf.keras.regularizers.l1_l2(0.0001)
-    #bias_reg     = tf.keras.regularizers.l1_l2(0.0001)
+
     f = tf.keras.layers.Dense(out_size,  input_dim=n_feat,
                               kernel_initializer=kernel_initializer,
                               bias_initializer=bias_initializer,
@@ -287,7 +269,6 @@ def fatigue_model789(input_x, n_feat=5, out_size=1, opt_mode="adam"):
 
     f = tf.keras.layers.Dropout(rate=0.05, seed=9 )(f)
     f = tf.keras.layers.Dense(7,    activation='sigmoid', use_bias=True)(f)
-    #f = tf.keras.layers.Dense(8,    activation='sigmoid', use_bias=True)(f)
 
     f = tf.keras.layers.Dense(out_size,  input_dim=n_feat,
                               kernel_initializer=kernel_initializer,
@@ -386,191 +367,12 @@ def fatigue_model131415(input_x, n_feat=5, out_size=1, opt_mode="adam"):
 
 
 
-def fatigue_model_very_deep(input_x, n_feat=5, out_size=1):
-    input_shape = input_x.shape
-    print(input_shape)
-    kernel_initializer = tf.keras.initializers.GlorotUniform(seed=6386)
-    bias_initializer   =  tf.keras.initializers.GlorotUniform(seed=6386)
-    kernel_reg   = tf.keras.regularizers.l2(0.06)
-    bias_reg     = tf.keras.regularizers.l2(0.06)
-
-    in_l  = tf.keras.layers.Input(shape=(input_shape[2]))
-    #in_l = tf.expand_dims(in_l,2 )
-    #encoding convs
-    print(input_shape)
-
-
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              #kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(in_l)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              #kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              #kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f1 = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                               #kernel_initializer=kernel_initializer,
-                               #bias_initializer=bias_initializer,
-                               #kernel_regularizer=kernel_reg,
-                               #bias_regularizer=bias_reg,
-                               use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              #kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f1)
-    f = tf.keras.layers.Multiply()([f1,f])
-
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              #kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              #kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              #kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f1 = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                               kernel_initializer=kernel_initializer,
-                               #bias_initializer=bias_initializer,
-                               #kernel_regularizer=kernel_reg,
-                               #bias_regularizer=bias_reg,
-                               use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f1)
-    f = tf.keras.layers.Multiply()([f1,f])
-
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f1 = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                               kernel_initializer=kernel_initializer,
-                               #bias_initializer=bias_initializer,
-                               #kernel_regularizer=kernel_reg,
-                               #bias_regularizer=bias_reg,
-                               use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f1)
-
-
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(7, input_dim=n_feat, activation="sigmoid",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    f = tf.keras.layers.Dense(1,  input_dim=n_feat, activation="linear",
-                              kernel_initializer=kernel_initializer,
-                              #bias_initializer=bias_initializer,
-                              #kernel_regularizer=kernel_reg,
-                              #bias_regularizer=bias_reg,
-                              use_bias=True)(f)
-    model = Model(in_l, f)
-
-    opt = tf.keras.optimizers.Adam(learning_rate=0.001)
-    loss_c  = ["mse", "mae"]
-    weight_loss = [0.9, 0.1]
-
-    model.compile(loss=loss_c, loss_weights=weight_loss,  optimizer=opt , metrics=[tf.keras.metrics.RootMeanSquaredError(), 'mse', 'mae'])
-    model.summary()
-
-
-
-    return model
-
-
-
-
-
-
 def get_tensor_slice(x_val, y_val, n):
     x_val = np.squeeze(x_val)
     y_val = np.squeeze(y_val)
     x_val = tf.expand_dims(tf.cast(x_val, tf.float32), axis=-1)
     y_val = tf.expand_dims(tf.cast(y_val, tf.float32), axis=-1)
     val_dataset = tf.data.Dataset.from_tensor_slices((x_val, y_val))
-    #val_dataset = val_dataset.shuffle(5000)
     val_dataset = val_dataset.batch(n).cache()
     val_dataset = val_dataset.prefetch(tf.data.experimental.AUTOTUNE)
     return  val_dataset
@@ -582,13 +384,12 @@ def test_model(label, checkpoint_sm, model, x_val, y_val, n, n_s, ll):
     x_val = tf.expand_dims(tf.cast(x_val, tf.float32), axis=-1)
     y_val = tf.expand_dims(tf.cast(y_val, tf.float32), axis=-1)
     val_dataset = tf.data.Dataset.from_tensor_slices((x_val, y_val))
-    #val_dataset = val_dataset.shuffle(5000)
     val_dataset = val_dataset.batch(n).cache()
     val_dataset = val_dataset.prefetch(tf.data.experimental.AUTOTUNE)
     t_eval = model.evaluate(val_dataset, batch_size=n)
 
     if label == "test1":
-        obj    = open('C:\\Users\\matca\\Desktop\\venanzio\\nuovi_dati6\\report_test1_' + str(ll) + '.txt', "a")
+        obj    = open('.\report_test1_' + str(ll) + '.txt', "a")
         a =  "size, " + str(n) + ", shift, " + str(n_s)
         for e in t_eval:
             xss  = ", " + str(e)
@@ -598,7 +399,7 @@ def test_model(label, checkpoint_sm, model, x_val, y_val, n, n_s, ll):
         obj.close()
 
     if label == "test2":
-        obj    = open('C:\\Users\\matca\\Desktop\\venanzio\\nuovi_dati6\\report_test2_' + str(ll) + '.txt', "a")
+        obj    = open('.\report_test2_' + str(ll) + '.txt', "a")
         a =  "size, " + str(n) + ", shift, " + str(n_s)
         for e in t_eval:
             xss  = ", " + str(e)
@@ -674,12 +475,9 @@ def model_fit_lm(x_train, y_train, x_val, y_val, x_test, y_test,x_test2, y_test2
         monitor = "val_mse"
 
     subd = label
-    path = "./nuovi_dati6/checkpoints/"
+    path = "./checkpoints/"
     save_path0 = path + subd + "_" + opt_mode + "_" + str(y_train.shape[1]) + "/"
     save_path  = save_path0 + "_fatigue_model.h5"
-
-    print(save_path)
-
 
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=save_path,
@@ -691,9 +489,6 @@ def model_fit_lm(x_train, y_train, x_val, y_val, x_test, y_test,x_test2, y_test2
         save_freq='epoch')
 
     tb_callback = tf.keras.callbacks.TensorBoard(log_dir= save_path0 + "logs")
-    #tensorboard --logdir=./logs
-    #csv_callback = tf.keras.callbacks.CSVLogger(save_path0 + "logs.csv", separator=',', append=False)
-
     train_dataset = get_tensor_slice(x_train, y_train, y_train.shape[1])
 
     val_dataset   = get_tensor_slice(x_val,   y_val, 1000)
@@ -725,8 +520,8 @@ parser.add_argument('-e','--epochs', help='Number of epochs', required=True)
 parser.add_argument('-y','--shift', help='Training shift', required=True)
 args = vars(parser.parse_args())
 
-x,   y,  y_min,  y_max,  y_mean, y_std    = preprocess_files("./nuovi_dati6/NN_Data_Train.csv")
-x2, y2, y_min2, y_max2, y_mean2, y_std2   = preprocess_files("./nuovi_dati6/NN_Data_Test.csv")
+x,   y,  y_min,  y_max,  y_mean, y_std    = preprocess_files("./data/NN_Data_Train.csv")
+x2, y2, y_min2, y_max2, y_mean2, y_std2   = preprocess_files("./data/NN_Data_Test.csv")
 
 
 print("Create training, validation and test set")
@@ -734,104 +529,26 @@ x_train, y_train = get_rows(x,         y, int(args["shift"]),    int(args["shift
 x_val,     y_val = get_rows(x,         y, 8000, 10000)
 x_test,   y_test = get_rows(x2,       y2, 0,    10000)
 
-x22, y22, y_min22, y_max22, y_mean22, y_std22   = preprocess_files("./nuovi_dati6/NN_Data_Test_2.csv")
+x22, y22, y_min22, y_max22, y_mean22, y_std22   = preprocess_files("./data/NN_Data_Test_2.csv")
 x_test2,   y_test2 = get_rows(x22,       y22, 0,    10000)
 
 model = model_fit_lm(x_train, y_train, x_val, y_val, x_test, y_test, x_test2,   y_test2, str(args["model"]), int(args["epochs"]), int(args["shift"]) )
 
 
 y_h, d_yh = model_rebuild(model, x2, y_min, y_max, y_mean, y_std)
-aa = pd.read_csv("./nuovi_dati6/NN_Data_Test.csv")
+aa = pd.read_csv("./data/NN_Data_Test.csv")
 aa["y_pred"]  = np.asarray(d_yh)
 aa["error"]   = aa["LN"] - aa["y_pred"]
 print(aa.head())
-aa.to_excel('./nuovi_dati6/test1_' + str(args["model"]) + " dim" + str(args["size"]) + " shift" + str(args["shift"]) +'.xlsx', index_label=False, index=False)
+aa.to_excel('./data/test1_' + str(args["model"]) + " dim" + str(args["size"]) + " shift" + str(args["shift"]) +'.xlsx', index_label=False, index=False)
 
 
-x2, y2, y_min2, y_max2, y_mean2, y_std2   = preprocess_files("./nuovi_dati6/NN_Data_Test_2.csv")
+x2, y2, y_min2, y_max2, y_mean2, y_std2   = preprocess_files("./data/NN_Data_Test_2.csv")
 x_test,   y_test = get_rows(x2,       y2, 0,    10000)
 y_h, d_yh = model_rebuild(model, x2, y_min, y_max, y_mean, y_std)
-aa = pd.read_csv("./nuovi_dati6/NN_Data_Test_2.csv")
+aa = pd.read_csv("./data/NN_Data_Test_2.csv")
 aa["y_pred"]  = np.asarray(d_yh)
 aa["error"]   = aa["LN"] - aa["y_pred"]
 print(aa.head())
-aa.to_excel('./nuovi_dati6/test2_' + str(args["model"]) + " dim" + str(args["size"]) + " shift" + str(args["shift"]) +'.xlsx', index_label=False, index=False)
+aa.to_excel('./data/test2_' + str(args["model"]) + " dim" + str(args["size"]) + " shift" + str(args["shift"]) +'.xlsx', index_label=False, index=False)
 
-
-
-
-#TODO
-#Fare la colonna delle N su Training, Validation e Test1 e Test2
-#attention
-
-# tensorboard --logdir=/home/neuronelab/Scrivania/multi-dyad/cc10/logs
-'''
-def model_test(x_val, y_val, label="test",):
-    path = "./"
-    subd = "test1"
-    checkpoint_sm = path + "/" + subd + "_lb"
-    #checkpoint_sm = '/media/oberlunar/TOSHIBA EXT3/Francis Lode Music/titan/venancio/test1_last_total.hdf5'
-
-    model = tf.keras.models.load_model(checkpoint_sm)
-
-    x_val = np.squeeze(x_val)
-    y_val = np.squeeze(y_val)
-    x_val = tf.expand_dims(tf.cast(x_val, tf.float32), axis=-1)
-    y_val = tf.expand_dims(tf.cast(y_val, tf.float32), axis=-1)
-    val_dataset = tf.data.Dataset.from_tensor_slices((x_val, y_val))
-    val_dataset = val_dataset.shuffle(5000)
-    val_dataset = val_dataset.batch(1000).cache()
-    val_dataset = val_dataset.prefetch(tf.data.experimental.AUTOTUNE)
-
-    t_eval = model.evaluate(val_dataset, batch_size=2500)
-    print( label + "MSE:", t_eval)
-    return model
-    
-    
-
-
-def model_step_test(model, val_on_x, val_on_y, rows=10):
-    y_hat = model.predict(val_on_x)
-    for i in range(0, rows, 1):
-        print("-------------------------")
-        print("Predizione riga " + str(i))
-        print("valore in input:")
-        print(val_on_x[:, i, :])
-        print("valore vero")
-        print(val_on_y[:, i])
-        print("valore predetto:")
-        print(y_hat[:, i])
-        input()
-        print("---------------------------")
-#model_step_test(model, x_test2, y_test2, 50)
-
-
-def model_rebuild(model, x, y, x_min, x_max, y_min, y_max, x_mean, x_std, y_mean, y_std):
-    y_h = model.predict(x)
-    d_y = []
-    _, s = y_h.shape
-    for i in range(0, s, 1):
-        d_yd  = descaler(y_h[:,i], y_mean, y_std, y_min, y_max)
-        d_y.append(d_yd)
-    return y_h, np.asarray(d_y, dtype=np.float)
-
-def model_rebuild2(model, x, y, x_min, x_max, y_min, y_max, x_mean, x_std, y_mean, y_std):
-    #TODO
-    return None
-
-y_h1, d_y1 = model_rebuild(model,  x_test,  y_test, x_min2, x_max2, y_min2, y_max2, x_mean2, x_std2, y_mean2, y_std2 )
-y_h2, d_y2 = model_rebuild(model, x_test2, y_test2, x_min2, x_max2, y_min2, y_max2, x_mean2, x_std2, y_mean2, y_std2 )
-y_h = np.concatenate((y_h1,y_h2), axis=1).flatten()
-d_y = np.concatenate((d_y1,d_y2), axis=0).flatten()
-
-
-import pandas as pd
-aa = pd.read_csv("test_it_2.csv")
-aa["yh"] = y_h
-aa["d_yh"] = d_y
-print(aa.head())
-aa.to_csv('test_yhs.csv')
-
-exit()
-'''
-#%%
