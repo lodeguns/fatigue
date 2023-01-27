@@ -38,7 +38,7 @@ This repository contains the manuscript mentioned at this [link] and associated 
 our predictive methodology based on neural networks.
 
 <p align="center">
-  <img width="800" height="450" src="https://github.com/lodeguns/Fatigue/blob/main/fig5.png?raw=true">
+  <img width="800" height="350" src="https://github.com/lodeguns/Fatigue/blob/main/fig5.png?raw=true">
 </p>
 
 
