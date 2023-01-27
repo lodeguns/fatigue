@@ -1,7 +1,7 @@
 
 # Fatigue
 ## Neural networks for fatigue crack propagation predictions in real-time under uncertainty  
-V. Giannella 1* , F. Bardozzo 2 , A. Postiglione 2 , R. Tagliaferri 2 , R. Sepe 1 , R. Citarella
+V. Giannella , F. Bardozzo , A. Postiglione , R. Tagliaferri , R. Sepe and R. Citarella
 
 
 > Abstract: Crack propagation analyses are fundamental for all mechanical structures for
@@ -19,26 +19,35 @@ using the fatigue life predictions computed by means of simulations developed wi
 element and Monte Carlo methods. A real-world case study has been presented to show how
 the proposed approach can deliver accurate life predictions even when input data are
 uncertain and highly variable. 
-Results demonstrated that the “H1-L1” neural network has been the best model, achieving an
+Results demonstrated that the 'H1-L1' neural network has been the best model, achieving an
 accuracy (Mean Square Error) of 4.8e-7 on the test dataset, and the best and the most stable
 results when decreasing the amount of data., while using the lowest number of parameters,
 thus highlighting its potential applicability for structural health monitoring purposes.
 
 
-This repository contains the manuscript mentioned at this [link]
-and associated code and data sets used for benchmarking
-our predictive methodology based on neural networks.
-
-Here the code to train, test and validation our neural networks is developed in 
-Python with Keras backend Tensorflow 2.10. 
-The model wrapper for the optimizators should be installed from this repository. 
-Should you need help running our code, please contact us. 
-
 
 
 <p align="center">
-  <img width="600" height="700" src="https://github.com/lodeguns/StaSiS-Net/blob/main/imgs/gh_example.png?raw=true">
+  <img width="800" height="450" src="https://github.com/lodeguns/Fatigue/blob/main/fig2.png?raw=true">
 </p>
+
+
+
+
+This repository contains the manuscript mentioned at this [link] and associated code and data sets used for benchmarking
+our predictive methodology based on neural networks.
+
+<p align="center">
+  <img width="800" height="450" src="https://github.com/lodeguns/Fatigue/blob/main/fig5.png?raw=true">
+</p>
+
+
+In this repository are provided the code and the data to train, test and validate our neural networks models. 
+The code is developed in Python with Keras backend Tensorflow 2.10. 
+
+The model wrapper for the optimizators should be installed from [this repository](https://github.com/fabiodimarco/tf-levenberg-marquardt). 
+
+Should you need help running our code, please contact us. If you use this code in your research work you must cite us.
 
 
 **How to cite this paper**
@@ -52,47 +61,13 @@ year = {2023},
 issn = {-},
 doi = {-},
 url = {-},
-author = {V. Giannella, F. Bardozzo , A. Postiglione, R. Tagliaferri, R. Sepe and R. Citarellai}
+author = {V. Giannella, F. Bardozzo , A. Postiglione, R. Tagliaferri, R. Sepe and R. Citarella}
 }
 ```
 
-
 **Licence**
 The same of the Journal.
-If you use this code you must cite this paper.
 
+**Corresponding author: ** vgiannella at unisa dot it
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Fatigue repository
-1 Department of Industrial Engineering, University of Salerno, via Giovanni Paolo II, 132, Fisciano (SA), Italy 
-2 Department of Management and Innovation Systems, University of Salerno, 
-Via Giovanni Paolo II, 132, Fisciano (SA), Italy
-* Correspondence: email: vgiannella@unisa.it;
+This work is supported by the Departements of Industrial Engineering and DISA-MIS - NeuRoNe Lab of the University of Salerno - Via Giovanni Paolo II, 132, Fisciano (SA), Italy 
