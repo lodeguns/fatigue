@@ -1,7 +1,7 @@
 
 ### Fatigue Repository
 ## Neural networks for fatigue crack propagation predictions in real-time under uncertainty  
-V. Giannella , F. Bardozzo , A. Postiglione , R. Tagliaferri , R. Sepe and R. Citarella
+V. Giannella , F. Bardozzo , A. Postiglione , R. Tagliaferri , R. Sepe and E. Armentani
 
 
 > Crack propagation analyses are fundamental for all mechanical structures for
@@ -61,7 +61,7 @@ year = {2023},
 issn = {-},
 doi = {-},
 url = {-},
-author = {V. Giannella, F. Bardozzo , A. Postiglione, R. Tagliaferri, R. Sepe and R. Citarella}
+author = {V. Giannella, F. Bardozzo , A. Postiglione, R. Tagliaferri, R. Sepe and E. Amertani}
 }
 ```
 
