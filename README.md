@@ -47,7 +47,10 @@ The code is developed in Python with Keras backend Tensorflow 2.10.
 
 The model wrapper for the optimizators should be installed from [this repository](https://github.com/fabiodimarco/tf-levenberg-marquardt). 
 
-Should you need help running our code, please contact us. If you use this code in your research work you must cite us.
+Should you need help running our code, please contact us. 
+
+
+If you use this code in your research work you must cite us.
 
 
 **How to cite this paper**
@@ -65,7 +68,7 @@ Should you need help running our code, please contact us. If you use this code i
 ```
 
 **Licence**
-The same of the Journal.
+The same of the Journal Computers & Structures
 
 **Corresponding author: ** vgiannella at unisa dot it
 
