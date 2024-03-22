@@ -53,15 +53,14 @@ Should you need help running our code, please contact us. If you use this code i
 **How to cite this paper**
 
 ```
-@article{Giannella2023neural,
-title = {Neural networks for fatigue crack propagation predictions in real-time under uncertainty.},
-journal = {-},
-pages = {-},
-year = {2023},
-issn = {-},
-doi = {-},
-url = {-},
-author = {V. Giannella, F. Bardozzo , A. Postiglione, R. Tagliaferri, R. Sepe and E. Amertani}
+@article{giannella2023neural,
+  title={Neural networks for fatigue crack propagation predictions in real-time under uncertainty},
+  author={Giannella, Venanzio and Bardozzo, Francesco and Postiglione, Alberto and Tagliaferri, Roberto and Sepe, Raffaele and Armentani, Enrico},
+  journal={Computers \& Structures},
+  volume={288},
+  pages={107157},
+  year={2023},
+  publisher={Elsevier}
 }
 ```
 
